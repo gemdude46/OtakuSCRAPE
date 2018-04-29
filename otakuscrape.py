@@ -45,12 +45,12 @@ def search_anime(anime):
 
 		for result in results:
 			print()
-			print('Name:\t{}'.format(result.select_one('.caption-category > a').get_text()))
+			print('Name:\t\t{}'.format(result.select_one('.caption-category > a').get_text()))
 			aid = result.select_one('.cap-cat-hover > a')['href']
 			aid = aid[7+aid.index('/anime/'):-1]
-			print('Id:\t{}'.format(aid))
-			print('Genres:\t{}'.format(', '.join([el.get_text() for el in result.select_one('.cch-content > p:nth-of-type(1)')('a')])))
-			print('Studio:\t{}'.format(', '.join([el.get_text() for el in result.select_one('.cch-content > p:nth-of-type(2)')('a')])))
+			print('Id:\t\t{}'.format(aid))
+			print('Genres:\t\t{}'.format(', '.join([el.get_text() for el in result.select_one('.cch-content > p:nth-of-type(2)')('a')])))
+			print('Premiered:\t{}'.format(', '.join([el.get_text() for el in result.select_one('.cch-content > p:nth-of-type(3)')('a')])))
 	
 	else:
 		print('No results found for {}.'.format(anime))
