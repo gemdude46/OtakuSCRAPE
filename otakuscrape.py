@@ -49,6 +49,7 @@ def search_anime(anime):
 			aid = result.select_one('.cap-cat-hover > a')['href']
 			aid = aid[7+aid.index('/anime/'):-1]
 			print('Id:\t\t{}'.format(aid))
+			print('Episodes:\t{}'.format(result.select_one('.caption-category > .ep-no').get_text().split()[-1]))
 			print('Genres:\t\t{}'.format(', '.join([el.get_text() for el in result.select_one('.cch-content > p:nth-of-type(2)')('a')])))
 			print('Premiered:\t{}'.format(', '.join([el.get_text() for el in result.select_one('.cch-content > p:nth-of-type(3)')('a')])))
 	
