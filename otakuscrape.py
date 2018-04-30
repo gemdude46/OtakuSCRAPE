@@ -25,6 +25,8 @@ WGET = None
 QUIET = False
 SHELLCODE = False
 
+PROVIDERS = ('www.rapidvideo.com', )
+
 try:
 	rc = subprocess.call(('wget', '--version'), stdout=open(os.devnull, 'wb'))
 	WGET = 0 == rc
@@ -55,6 +57,20 @@ def search_anime(anime):
 	
 	else:
 		print('No results found for {}.'.format(anime))
+
+def extract_strings(js):
+	
+	s = ''
+	x = False
+	for c in js:
+		if c == '"':
+			if x:
+				yield s
+			else:
+				s = ''
+			x = not x
+		elif x:
+			s += c
 
 def get_quality(quality, qualities):
 	
@@ -88,12 +104,25 @@ def get_episode_uri(series, episode, quality):
 	page = resp.read()
 	soup = BeautifulSoup(page, 'html.parser')
 
-	player = [i for i in soup.find_all('iframe') if i['src'].startswith('/player.php')][0]
+	links = []
+	
+	for script in soup.find_all('script'):
+		for string in extract_strings(script.get_text()):
+			if string.startswith('/player.php'):
+				links.append(codecs.encode(urlparse.parse_qs(urlparse.urlparse(string).query)['link'][0], 'rot13'))
 
-	link13 = urlparse.parse_qs(urlparse.urlparse(player['src']).query)['link'][0]
-	link = codecs.encode(link13, 'rot_13')
-
-	provider = urlparse.urlparse(link).netloc
+	for prov in PROVIDERS:
+		for l in links:
+			if urlparse.urlparse(l).netloc == prov:
+				provider = prov
+				link = l
+				break
+		else:
+			continue
+		break
+	else:
+		print("OtakuSCRAPE: Unknown Provider: no known scraper for any available provider", file=sys.stderr)
+		raise ValueError('No known providers')	
 
 	if provider == 'www.rapidvideo.com':
 		player_page = request.urlopen(request.Request(link, headers={'User-Agent': USER_AGENT})).read()
