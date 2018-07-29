@@ -108,8 +108,8 @@ def get_episode_uri(series, episode, quality):
 	
 	for script in soup.find_all('script'):
 		for string in extract_strings(script.get_text()):
-			if string.startswith('/player.php'):
-				links.append(codecs.encode(urlparse.parse_qs(urlparse.urlparse(string).query)['link'][0], 'rot13'))
+			if string.startswith('/geniee-embedded.html'):
+				links.append(codecs.encode(urlparse.parse_qs(urlparse.urlparse(urlparse.parse_qs(urlparse.urlparse(string).query)['link'][0]).query)['link'][0], 'rot13'))
 
 	for prov in PROVIDERS:
 		for l in links:
@@ -128,6 +128,9 @@ def get_episode_uri(series, episode, quality):
 		player_page = request.urlopen(request.Request(link, headers={'User-Agent': USER_AGENT})).read()
 		player_soup = BeautifulSoup(player_page, 'html.parser')
 
+		#print (link)
+
+		'''
 		quality_buttons = player_soup.select('#home_video div > a')
 		qualities = [int(el['href'][3+el['href'].index('&'):-1]) for el in quality_buttons]
 		
@@ -142,8 +145,9 @@ def get_episode_uri(series, episode, quality):
 
 		else:
 			get_quality(quality, (-1,))
+		'''
 
-		source = quality_player_soup.find('source')
+		source = player_soup.find('source')
 		video_url = source['src']
 
 		return video_url
@@ -158,7 +162,7 @@ def download_episode(series, episode, quality):
 	
 	if not SHELLCODE:
 		try:
-			open(outfile, 'wb').close()
+			open(outfile, 'ab').close()
 		except PermissionError as e:
 			print("OtakuSCRAPE: Permission Error: unable to write to file '{}': Permission denied".format(outfile), file=sys.stderr)
 			raise e
@@ -169,7 +173,7 @@ def download_episode(series, episode, quality):
 		uri = get_episode_uri(series, episode, quality)
 	except Exception as e:
 		if not QUIET: print('Failed to look up {} episode {}'.format(series, episode))
-		os.unlink(outfile)
+		if not SHELLCODE: os.unlink(outfile)
 		raise e
 
 	if not QUIET: print('Downloading {} episode {}'.format(series, episode))
@@ -223,11 +227,11 @@ def download_episodes(series, episodes, quality):
 	failures = 0
 
 	for episode in episodes:
-		try:
+		#try:
 			download_episode(series, episode, quality)
-		except Exception as e:
-			print('An error occurred downloading episode {} of {}: {}: {}'.format(episode, series, type(e).__name__, e), file=sys.stderr)
-			failures += 1
+		#except Exception as e:
+		#	print('An error occurred downloading episode {} of {}: {}: {}'.format(episode, series, type(e).__name__, e), file=sys.stderr)
+		#	failures += 1
 	
 	if not QUIET:
 		print('Downloaded {}/{} episodes.'.format(len(episodes) - failures, len(episodes)))
@@ -238,7 +242,7 @@ if __name__ == '__main__':
 	parser.add_argument('command', metavar='command', choices={'download', 'search'}, help="Valid commands are 'search' and 'download'")
 	parser.add_argument('anime', help='If downloading, the anime to download. If searching, the search query.')
 	parser.add_argument('episodes', type=int, nargs='*', help='The episodes to download')
-	parser.add_argument('-r', '--quality', default='HIGHEST', dest='quality', help="The quality to download. Can be 'HIGHEST', 'LOWEST', or a number")
+	#parser.add_argument('-r', '--quality', default='HIGHEST', dest='quality', help="The quality to download. Can be 'HIGHEST', 'LOWEST', or a number")
 	parser.add_argument('-p', '--uri-pattern', default='https://otakustream.tv/anime/{series}/episode-{episode}/', dest='pattern',
 	                    help='The URI to download from. Is a python format string with series and episode passed. You probably don\'t need to change this.')
 	parser.add_argument('-o', '--output-file-pattern', default='{episode}.mp4', dest='output',
@@ -261,6 +265,7 @@ if __name__ == '__main__':
 
 	command = args.command
 
+	'''
 	quality = args.quality
 
 	if quality not in {'HIGHEST', 'LOWEST'}:
@@ -272,12 +277,13 @@ if __name__ == '__main__':
 		except ValueError:
 			print("OtakuSCRAPE: Invalid Quality: quality must be 'HIGHEST', 'LOWEST', or a positive integer", file=sys.stderr)
 			sys.exit(1)
-	
+	'''
+
 	if args.wget:
 		WGET = False
 
 	if command == 'download':
-		download_episodes(args.anime, args.episodes, quality)
+		download_episodes(args.anime, args.episodes, -1) #quality)
 	
 	elif command == 'search':
 		search_anime(args.anime)
