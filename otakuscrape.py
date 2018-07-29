@@ -227,11 +227,11 @@ def download_episodes(series, episodes, quality):
 	failures = 0
 
 	for episode in episodes:
-		#try:
+		try:
 			download_episode(series, episode, quality)
-		#except Exception as e:
-		#	print('An error occurred downloading episode {} of {}: {}: {}'.format(episode, series, type(e).__name__, e), file=sys.stderr)
-		#	failures += 1
+		except Exception as e:
+			print('An error occurred downloading episode {} of {}: {}: {}'.format(episode, series, type(e).__name__, e), file=sys.stderr)
+			failures += 1
 	
 	if not QUIET:
 		print('Downloaded {}/{} episodes.'.format(len(episodes) - failures, len(episodes)))
