@@ -15,6 +15,7 @@ One all the dependencies are installed, just copy the `otakuscrape.py` file to s
 
 ## Usage
 First, search for the sries you want to download. (Movies are not supported at this time.)
+
 Example:
 
 ```
