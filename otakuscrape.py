@@ -108,8 +108,10 @@ def get_episode_uri(series, episode, quality):
 	
 	for script in soup.find_all('script'):
 		for string in extract_strings(script.get_text()):
-			if string.startswith('/geniee-embedded.html'):
+			if string.startswith('/geniee-embedded'):
 				links.append(codecs.encode(urlparse.parse_qs(urlparse.urlparse(urlparse.parse_qs(urlparse.urlparse(string).query)['link'][0]).query)['link'][0], 'rot13'))
+			elif string.startswith('/player.php'):
+				links.append(codecs.encode(urlparse.parse_qs(urlparse.urlparse(string).query)['link'][0], 'rot13'))
 
 	for prov in PROVIDERS:
 		for l in links:
